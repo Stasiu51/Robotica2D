@@ -8,7 +8,7 @@ namespace GameObjects
     {
         public abstract bool sourceSend(int turn, int channel);
 
-        public abstract bool emitToDir(int dir, int turn, int channel);
+        public abstract bool emitToDir(Dir dir, int turn, int channel);
     }
 
     public class TimerSource : Source
@@ -18,7 +18,7 @@ namespace GameObjects
             return true;
         }
 
-        public override bool emitToDir(int dir, int turn, int channel)
+        public override bool emitToDir(Dir dir, int turn, int channel)
         {
             return true;
         }

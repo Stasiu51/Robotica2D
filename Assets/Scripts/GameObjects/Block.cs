@@ -11,6 +11,8 @@ namespace GameObjects
 
         private Vector2Int _pos;
 
+        public abstract void initialSetup();
+
         public abstract Routing getRouting();
 
         public abstract Source getSource();
@@ -30,14 +32,12 @@ namespace GameObjects
             _pos = pos;
         }
 
-        public abstract int getNSides();
-
         public abstract void setStuck(Block stuckTo);
 
         public abstract void setStuckInvisible(Block stuckFrom);
 
         public abstract Block getStuck(Block stuckTo);
-        public abstract Block getStuckDir(int dir);
+        public abstract Block getStuckDir(Dir dir);
 
 
 
@@ -46,38 +46,33 @@ namespace GameObjects
     public abstract class SingleBlock : Block
     {
         private readonly Block[] _stuck = new Block[6];
-        public GameObject[] connections = new GameObject[6];
+        public GameObject[] Connections = new GameObject[6];
         public const int SINGLEBLOCKMASS = 1;
 
         public override void setStuck(Block stuckTo)
         {
-            int dir = HexGrid.relativeDir(getPos(), stuckTo.getPos());
-            _stuck[dir] = stuckTo;
-            connections[dir].SetActive(stuckTo != null);
+            Dir dir = HexGrid.relativeDir(getPos(), stuckTo.getPos());
+            _stuck[dir.N] = stuckTo;
+            Connections[dir.N]?.SetActive(stuckTo != null);
             stuckTo.setStuckInvisible(this);
         }
 
         public override void setStuckInvisible( Block stuckFrom)
         {
-            int dir = HexGrid.relativeDir(getPos(), stuckFrom.getPos());
-            _stuck[dir] = stuckFrom;
-            connections[dir].SetActive(false);
+            Dir dir = HexGrid.relativeDir(getPos(), stuckFrom.getPos());
+            _stuck[dir.N] = stuckFrom;
+            Connections[dir.N]?.SetActive(false);
         }
 
         public override Block getStuck(Block stuckTo)
         {
-            int dir = HexGrid.relativeDir(getPos(), stuckTo.getPos());
-            return _stuck[dir];
+            Dir dir = HexGrid.relativeDir(getPos(), stuckTo.getPos());
+            return _stuck[dir.N];
             
         }
-        public override Block getStuckDir(int dir)
+        public override Block getStuckDir(Dir dir)
         {
-            return _stuck[dir];
-        }
-
-        public override int getNSides()
-        {
-            return 6;
+            return _stuck[dir.N];
         }
 
     }

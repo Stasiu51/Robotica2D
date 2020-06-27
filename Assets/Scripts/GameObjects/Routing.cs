@@ -48,20 +48,20 @@ namespace GameObjects
             return routing;
         }
 
-        public void setConnected(bool isconnected, int dir1, int dir2, int channel)
+        public void setConnected(bool isconnected, Dir dir1, Dir dir2, int channel)
         {
-            _connected[channel,dir1, dir2] = isconnected;
-            _connected[channel,dir2, dir1] = isconnected;
+            _connected[channel,dir1.N, dir2.N] = isconnected;
+            _connected[channel,dir2.N, dir1.N] = isconnected;
         }
 
-        public bool getConnected(int dir1, int dir2, int channel)
+        public bool getConnected(Dir dir1, Dir dir2, int channel)
         {
-            return (_connected[channel,dir1, dir2]);
+            return (_connected[channel,dir1.N, dir2.N]);
         }
 
-        public List<int> getAllFrom(int dir, int channel)
+        public IEnumerable<Dir> getAllFrom(Dir fromDir, int channel)
         {
-            return new List<int>(from num in Enumerable.Range(0, 6) where _connected[channel,dir, num] select num);
+            return new List<Dir>(from toDir in Dir.allDirs() where _connected[channel,fromDir.N, toDir.N] select toDir);
         }
 
 
@@ -79,13 +79,12 @@ namespace GameObjects
 
         public abstract ArType getType();
 
-        public abstract void setConnected(bool isconnected, int dir1, int func, int channel);
-        public abstract bool getConnected(int dir1, int func, int channel);
+        public abstract void setConnected(bool isconnected, Dir dir1, int func, int channel);
+        public abstract bool getConnected(Dir dir1, int func, int channel);
     }
 
     public class SpawnRouting : AddRouting
     {
-        //0-6 are spawns N to NW
         private bool[,,] _spawnConnect;
     
         public SpawnRouting()
@@ -97,19 +96,19 @@ namespace GameObjects
             }
         }
 
-        public override void setConnected(bool isconnected, int dir1, int func, int channel)
+        public override void setConnected(bool isconnected, Dir dir1, int func, int channel)
         {
             if (func < 0 || func > 6) { throw new System.ArgumentOutOfRangeException(); }
-            _spawnConnect[channel,dir1, func] = isconnected;
+            _spawnConnect[channel,dir1.N, func] = isconnected;
         }
 
-        public override bool getConnected(int dir1, int func, int channel)
+        public override bool getConnected(Dir dir1, int func, int channel)
         {
             if (func < 0 || func > 6) { throw new System.ArgumentOutOfRangeException(); }
-            return _spawnConnect[channel, dir1, func];
+            return _spawnConnect[channel, dir1.N, func];
         }
 
-        public List<int> funcsConnectedToDir(int dir, int channel)
+        public List<int> funcsConnectedToDir(Dir dir, int channel)
         {
             return new List<int>(from func in Enumerable.Range(0, 6) where getConnected(dir,func,channel) select func);
         }

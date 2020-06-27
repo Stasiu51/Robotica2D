@@ -6,6 +6,10 @@
         
         public override int getMass() => SINGLEBLOCKMASS;
 
+        public override void initialSetup()
+        {
+        }
+
         public override Routing getRouting()
         {
             return _routing;

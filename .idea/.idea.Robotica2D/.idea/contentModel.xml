@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ContentModelStore">
+    <e p="C:\Users\adamw\AppData\Local\JetBrains\Rider2020.1\extResources" t="IncludeRecursive" />
+    <e p="C:\Users\adamw\AppData\Local\JetBrains\Rider2020.1\resharper-host\Local\Transient\ReSharperHost\v201\SolutionCaches\_Robotica2D.-245463897.00" t="ExcludeRecursive" />
+    <e p="F:\Adam\Documents\Robotica2D" t="IncludeRecursive">
+      <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
+      <e p="Assets" t="Include">
+        <e p="Scripts" t="Include">
+          <e p="GameControl" t="Include">
+            <e p="CStateMachine.cs" t="Include" />
+            <e p="GameManager.cs" t="Include" />
+            <e p="SubModes_1" t="Include">
+              <e p="EditBehaviour.cs" t="Include" />
+              <e p="EditMode" t="Include">
+                <e p="EditAddBrainBlock.cs" t="Include" />
+                <e p="EditAddObject.cs" t="Include" />
+                <e p="EditAddSpawnBlock.cs" t="Include" />
+                <e p="EditAddStructureBlock.cs" t="Include" />
+                <e p="EditIdle.cs" t="Include" />
+              </e>
+              <e p="PlayCBehaviour.cs" t="Include" />
+              <e p="PlayMode" t="Include">
+                <e p="PlayEvalPhase.cs" t="Include" />
+                <e p="PlayIdle.cs" t="Include" />
+                <e p="PlayMovePhase.cs" t="Include" />
+                <e p="PlayPostEvalPausePhase.cs" t="Include" />
+                <e p="PlaySignalPhase.cs" t="Include" />
+              </e>
+            </e>
+            <e p="Timer.cs" t="Include" />
+          </e>
+          <e p="GameObjects" t="Include">
+            <e p="Block.cs" t="Include" />
+            <e p="Blocks.cs" t="Include" />
+            <e p="HexGrid.cs" t="Include" />
+            <e p="Hub.cs" t="Include" />
+            <e p="Movement.cs" t="Include" />
+            <e p="Routing.cs" t="Include" />
+            <e p="Sources.cs" t="Include" />
+            <e p="SpawnBlock.cs" t="Include" />
+            <e p="StructureBlock.cs" t="Include" />
+          </e>
+          <e p="ObjectAccess" t="Include">
+            <e p="Managers.cs" t="Include" />
+            <e p="prefabs.cs" t="Include" />
+            <e p="UIElements.cs" t="Include" />
+          </e>
+          <e p="UIControl" t="Include">
+            <e p="SelectorManager.cs" t="Include" />
+            <e p="TileManager.cs" t="Include" />
+            <e p="UIEventInvoker.cs" t="Include" />
+          </e>
+        </e>
+      </e>
+      <e p="obj" t="ExcludeRecursive" />
+      <e p="Packages" t="ExcludeRecursive" />
+      <e p="Robotica2D.sln" t="IncludeFlat" />
+      <e p="Temp\bin" t="ExcludeRecursive" />
+    </e>
+  </component>
+</project>

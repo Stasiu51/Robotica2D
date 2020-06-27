@@ -24,9 +24,15 @@ namespace GameControl.SubModes_1.PlayMode
 
             if (managers == null) managers = GameObject.Find("ObjectAccess").GetComponent<Managers>();
             if (blocks == null) blocks = managers.Blocks;
-
-            BroadCastResult broadcasts = blocks.getBroadcast(((PlayCBehaviour) new PlayCBehaviour().getInstance()).Turn);
+            int turn = ((PlayCBehaviour) new PlayCBehaviour().getInstance()).Turn;
+            
+            BroadCastResult broadcasts = blocks.getBroadcast(turn);
             ((PlayMovePhase) new PlayMovePhase().getInstance()).setBroadcastResult(broadcasts);
+
+            foreach (Block block in broadcasts.allBlocksThatRecieved(0))
+            {
+                block.GetComponent<SpriteRenderer>().color = Color.blue;
+            }
             
             GameObject Timers = GameObject.Find("Timers");
             Timer.MakeTimer(SIGNALPAUSETIME, () => Exit(new PlayMovePhase().getInstance()));

@@ -9,6 +9,11 @@ namespace GameObjects
         
         public override int getMass() => SINGLEBLOCKMASS;
 
+        public override void initialSetup()
+        {
+            throw new System.NotImplementedException();
+        }
+
         public override Routing getRouting()
         {
             return _routing;
@@ -24,16 +29,16 @@ namespace GameObjects
             return false;
         }
 
-        public bool isActiveFromDir(int dir, int channel)
+        public bool isActiveFromDir(Dir dir, int channel)
         {
             SpawnRouting sr = (SpawnRouting) _routing.AddRouting;
             List<int> funcs = sr.funcsConnectedToDir(dir, channel);
             return funcs.Count > 0;
         }
 
-        public bool isActiveFromAnyDir(List<int> inDirs, int channel)
+        public bool isActiveFromAnyDir(IEnumerable<Dir> inDirs, int channel)
         {
-            foreach (int dir in inDirs)
+            foreach (Dir dir in inDirs)
             {
                 if (isActiveFromDir(dir, channel)) return true;
             }
