@@ -12,42 +12,26 @@ namespace GameObjects
         private TimerSource _timerSource = new TimerSource();
         const int HUBMASS = 100;
 
-        private readonly Dictionary<Vector2Int, int> evenYDirs = new Dictionary<Vector2Int, int>
-        {
-            {new Vector2Int(2, 0), 0},
-            {new Vector2Int(1, -1), 1},
-            {new Vector2Int(1, -2), 2},
-            {new Vector2Int(0, -2), 3},
-            {new Vector2Int(-1, -2), 4},
-            {new Vector2Int(-2, -1), 5},
-            {new Vector2Int(-2, 0), 6},
-            {new Vector2Int(-2, 1), 7},
-            {new Vector2Int(-1, 2), 8},
-            {new Vector2Int(0, 2), 9},
-            {new Vector2Int(1, 2), 10},
-            {new Vector2Int(1, 1), 11},
-        };
-        private readonly Dictionary<Vector2Int, int> oddYDirs = new Dictionary<Vector2Int, int>
+        private readonly Dictionary<Vector2Int, int> YDirs = new Dictionary<Vector2Int, int>
         {
             {new Vector2Int(2, 0), 0},
             {new Vector2Int(2, -1), 1},
-            {new Vector2Int(1, -2), 2},
-            {new Vector2Int(0, -2), 3},
-            {new Vector2Int(-1, -2), 4},
+            {new Vector2Int(2, -2), 2},
+            {new Vector2Int(1, -2), 3},
+            {new Vector2Int(0, -2), 4},
             {new Vector2Int(-1, -1), 5},
             {new Vector2Int(-2, 0), 6},
-            {new Vector2Int(-1, 1), 7},
-            {new Vector2Int(-1, 2), 8},
-            {new Vector2Int(0, 2), 9},
-            {new Vector2Int(1, 2), 10},
-            {new Vector2Int(2, 1), 11},
+            {new Vector2Int(-2, 1), 7},
+            {new Vector2Int(-2, 2), 8},
+            {new Vector2Int(-1, 2), 9},
+            {new Vector2Int(0, 2), 10},
+            {new Vector2Int(1, 1), 11},
         };
 
         private int relativeDir(Vector2Int from, Vector2Int to)
         {
             Vector2Int d = to - from;
-            if (from.y % 2 == 0) return evenYDirs[d];
-            return oddYDirs[d];
+            return YDirs[d];
         }
         public override void setStuck(Block stuckTo)
         {
