@@ -8,8 +8,8 @@ namespace GameObjects
 {
     public abstract class Block : MonoBehaviour
     {
-
         private Vector2Int _pos;
+        public abstract bool selectable();
 
         public abstract void initialSetup();
 
@@ -33,14 +33,9 @@ namespace GameObjects
         }
 
         public abstract void setStuck(Block stuckTo);
-
         public abstract void setStuckInvisible(Block stuckFrom);
-
         public abstract Block getStuck(Block stuckTo);
         public abstract Block getStuckDir(Dir dir);
-
-
-
     }
 
     public abstract class SingleBlock : Block
@@ -57,7 +52,7 @@ namespace GameObjects
             stuckTo.setStuckInvisible(this);
         }
 
-        public override void setStuckInvisible( Block stuckFrom)
+        public override void setStuckInvisible(Block stuckFrom)
         {
             Dir dir = HexGrid.relativeDir(getPos(), stuckFrom.getPos());
             _stuck[dir.N] = stuckFrom;
@@ -68,12 +63,11 @@ namespace GameObjects
         {
             Dir dir = HexGrid.relativeDir(getPos(), stuckTo.getPos());
             return _stuck[dir.N];
-            
         }
+
         public override Block getStuckDir(Dir dir)
         {
             return _stuck[dir.N];
         }
-
     }
 }

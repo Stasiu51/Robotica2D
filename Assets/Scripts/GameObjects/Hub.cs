@@ -16,6 +16,8 @@ namespace GameObjects
         public override int getMass() => HUBMASS;
         public override Source getSource() => _timerSource;
 
+        public override bool selectable() => true;
+
         public override void initialSetup()
         {
             Debug.Log("hi");

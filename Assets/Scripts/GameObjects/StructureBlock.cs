@@ -3,11 +3,15 @@
     public class StructureBlock : SingleBlock
     {
         private readonly Routing _routing = Routing.newBasicRouting();
+        private bool _selectable = true;
         
         public override int getMass() => SINGLEBLOCKMASS;
 
+        public override bool selectable() => _selectable;
+
         public override void initialSetup()
         {
+            _selectable = false;
         }
 
         public override Routing getRouting()

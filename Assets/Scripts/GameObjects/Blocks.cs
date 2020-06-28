@@ -16,7 +16,7 @@ namespace GameObjects
         {
             hexGrid = GameObject.Find("HexGrid").GetComponent<HexGrid>();
 
-            blocksArray = new Block[hexGrid.extent*2,hexGrid.extent*2];
+            blocksArray = new Block[hexGrid.extent * 2, hexGrid.extent * 2];
             alignStartingBlocks();
         }
 
@@ -28,7 +28,7 @@ namespace GameObjects
                 Block b = go.GetComponent<Block>();
                 Vector2Int coords = HexGrid.getCoordsFromPos(go.transform.position);
                 b.setPos(coords);
-                setBlockAtPos(coords,b);
+                setBlockAtPos(coords, b);
             }
 
             foreach (GameObject gameObject in existingBlocks)
@@ -45,7 +45,8 @@ namespace GameObjects
             received(2, turn, broadCastResult);
             return broadCastResult;
         }
-        private void received (int channel, int turn, BroadCastResult broadCastResult)
+
+        private void received(int channel, int turn, BroadCastResult broadCastResult)
         {
             List<Block> redSources = blocksSet.Where(
                 b => b.hasSource() && b.getSource().sourceSend(turn, channel)).ToList();
@@ -62,9 +63,9 @@ namespace GameObjects
                     if (next != null)
                     {
                         visited.Add(next);
-                        broadCastResult.AddBlockFromDir(channel,next,dir);
+                        broadCastResult.AddBlockFromDir(channel, next, dir);
 
-                        dfsRecurse(visited,broadCastResult, next, 0, turn, dir.Opposite());
+                        dfsRecurse(visited, broadCastResult, next, 0, turn, dir.Opposite());
                     }
                 }
             }
@@ -75,29 +76,25 @@ namespace GameObjects
             }
         }
 
-        private void dfsRecurse(HashSet<Block> visited,BroadCastResult broadCastResult, Block start, int channel, int turn, Dir entryDir)
+        private void dfsRecurse(HashSet<Block> visited, BroadCastResult broadCastResult, Block start, int channel,
+            int turn, Dir entryDir)
         {
-
             foreach (Dir toDir in start.getRouting().getAllFrom(entryDir, channel))
             {
-                    
                 Block next = start.getStuckDir(toDir);
 
                 if (next == null) continue;
-                
-                broadCastResult.AddBlockFromDir(channel,next,toDir);
-                
+
+                broadCastResult.AddBlockFromDir(channel, next, toDir);
+
                 if (!visited.Contains(next))
                 {
                     visited.Add(next);
-                    dfsRecurse(visited,broadCastResult, next, channel, turn, toDir.Opposite());
+                    dfsRecurse(visited, broadCastResult, next, channel, turn, toDir.Opposite());
                 }
-
-
             }
-        
         }
-        
+
         public Block blockAtPos(Vector2Int pos)
         {
             return blocksArray[pos.x + hexGrid.extent, pos.y + hexGrid.extent];
@@ -114,7 +111,7 @@ namespace GameObjects
             if (blockAtPos(pos) != null) return false;
             block.gameObject.transform.parent = transform;
             block.gameObject.transform.position = HexGrid.getPosFromCoords(pos);
-            setBlockAtPos(pos,block);
+            setBlockAtPos(pos, block);
             block.setPos(pos);
             foreach (Vector2Int pAdj in HexGrid.adjacentTo(pos))
             {
@@ -122,13 +119,14 @@ namespace GameObjects
                 if (blockAdj == null) continue;
                 blockAdj.setStuck(block);
             }
+
             return true;
         }
     }
 
     public class BroadCastResult
     {
-        private readonly Dictionary<Block, HashSet<Dir>>[] _dictionary = 
+        private readonly Dictionary<Block, HashSet<Dir>>[] _dictionary =
         {
             new Dictionary<Block, HashSet<Dir>>(),
             new Dictionary<Block, HashSet<Dir>>(),
@@ -139,7 +137,7 @@ namespace GameObjects
         {
             Dir dir = toDir.Opposite();
             if (_dictionary[channel].ContainsKey(b)) _dictionary[channel][b].Add(dir);
-            else _dictionary[channel][b] = new HashSet<Dir>{dir};
+            else _dictionary[channel][b] = new HashSet<Dir> {dir};
         }
 
         private IEnumerable<Dir> dirsOfBlock(int channel, Block b)
@@ -158,10 +156,10 @@ namespace GameObjects
                     if (b.GetType() != typeof(SpawnBlock)) continue;
                     SpawnBlock sb = (SpawnBlock) b;
                     if (activeSpawnBlocks.Contains(sb)) continue;
-                    
-                    IEnumerable<Dir> inDirs = dirsOfBlock(channel,b);
-                    
-                    if (sb.isActiveFromAnyDir(inDirs,channel)) activeSpawnBlocks.Add(sb);
+
+                    IEnumerable<Dir> inDirs = dirsOfBlock(channel, b);
+
+                    if (sb.isActiveFromAnyDir(inDirs, channel)) activeSpawnBlocks.Add(sb);
                 }
             }
 

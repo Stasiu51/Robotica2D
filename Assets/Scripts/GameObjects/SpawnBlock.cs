@@ -9,6 +9,7 @@ namespace GameObjects
         
         public override int getMass() => SINGLEBLOCKMASS;
 
+        public override bool selectable() => true;
         public override void initialSetup()
         {
             throw new System.NotImplementedException();

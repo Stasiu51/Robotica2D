@@ -70,7 +70,7 @@ namespace GameControl.SubModes_1.EditMode
             {
                 Vector2Int coords = _hexGrid.mouseCoords();
                 Block b = _blocks.blockAtPos(coords);
-                if (b == null)
+                if (b == null || !b.selectable())
                 {
                     _selectorManager.deselectAll();
                     return null;
