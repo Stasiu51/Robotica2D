@@ -9,7 +9,7 @@ namespace GameObjects
 
         public StructureBlock[] padding = new StructureBlock[6];
         private TimerSource _timerSource = new TimerSource();
-        const int HUBMASS = 100;
+        const int HUBMASS = -3;
         private Routing _routing = Routing.newBasicRouting();
 
         public override bool hasSource() => true;
@@ -18,7 +18,7 @@ namespace GameObjects
 
         public override bool selectable() => true;
 
-        public override void initialSetup()
+        public override void initialSetupOverride()
         {
             Debug.Log("hi");
             foreach (StructureBlock structureBlock in padding)

@@ -1,4 +1,6 @@
-﻿namespace GameObjects
+﻿using UnityEngine;
+
+namespace GameObjects
 {
     public class StructureBlock : SingleBlock
     {
@@ -9,8 +11,9 @@
 
         public override bool selectable() => _selectable;
 
-        public override void initialSetup()
+        public override void initialSetupOverride()
         {
+            Debug.Log("setup");
             _selectable = false;
         }
 

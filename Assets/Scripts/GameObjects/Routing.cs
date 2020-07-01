@@ -7,9 +7,7 @@ using UnityEngine.Playables;
 namespace GameObjects
 {
     public class Routing
-    {   
-    
-        public AddRouting AddRouting;
+    {
 
         private bool[,,] _connected;
         private bool[] _transmissionConnect;
@@ -30,16 +28,6 @@ namespace GameObjects
 
             return r;
         }
-
-        public static Routing newSpawnRouting(bool[,,] initConnected = null)
-        {
-            if (initConnected == null) initConnected = allTrue(6);
-            Routing routing = new Routing();
-            routing.AddRouting = new SpawnRouting();
-            routing._connected = initConnected;
-            return routing;
-        }
-
         public static Routing newBasicRouting(bool[,,] initConnected = null)
         {
             if (initConnected == null) initConnected = allTrue(6);
@@ -48,74 +36,24 @@ namespace GameObjects
             return routing;
         }
 
-        public void setConnected(bool isconnected, Dir dir1, Dir dir2, int channel)
+        public void setConnected(bool isconnected, Dir dir1, Dir dir2, Chn channel)
         {
-            _connected[channel,dir1.N, dir2.N] = isconnected;
-            _connected[channel,dir2.N, dir1.N] = isconnected;
+            _connected[channel.N,dir1.N, dir2.N] = isconnected;
+            _connected[channel.N,dir2.N, dir1.N] = isconnected;
         }
 
-        public bool getConnected(Dir dir1, Dir dir2, int channel)
+        public bool getConnected(Dir dir1, Dir dir2, Chn channel)
         {
-            return (_connected[channel,dir1.N, dir2.N]);
+            return (_connected[channel.N,dir1.N, dir2.N]);
         }
 
-        public IEnumerable<Dir> getAllFrom(Dir fromDir, int channel)
+        public IEnumerable<Dir> getAllFrom(Dir fromDir, Chn channel)
         {
-            return new List<Dir>(from toDir in Dir.allDirs() where _connected[channel,fromDir.N, toDir.N] select toDir);
+            return new List<Dir>(from toDir in Dir.allDirs() where getConnected(fromDir,toDir,channel) select toDir);
         }
 
 
     }
 
-    public abstract class AddRouting
-    {
-        public enum ArType
-        {
-            Spawn,
-            Brain,
-            Rotate,
-            Memory
-        }
 
-        public abstract ArType getType();
-
-        public abstract void setConnected(bool isconnected, Dir dir1, int func, int channel);
-        public abstract bool getConnected(Dir dir1, int func, int channel);
-    }
-
-    public class SpawnRouting : AddRouting
-    {
-        private bool[,,] _spawnConnect;
-    
-        public SpawnRouting()
-        {
-            _spawnConnect = new bool[3,6, 6];
-            foreach (int dir in Enumerable.Range(0,6))
-            {
-                _spawnConnect[0, dir, 5] = true;
-            }
-        }
-
-        public override void setConnected(bool isconnected, Dir dir1, int func, int channel)
-        {
-            if (func < 0 || func > 6) { throw new System.ArgumentOutOfRangeException(); }
-            _spawnConnect[channel,dir1.N, func] = isconnected;
-        }
-
-        public override bool getConnected(Dir dir1, int func, int channel)
-        {
-            if (func < 0 || func > 6) { throw new System.ArgumentOutOfRangeException(); }
-            return _spawnConnect[channel, dir1.N, func];
-        }
-
-        public List<int> funcsConnectedToDir(Dir dir, int channel)
-        {
-            return new List<int>(from func in Enumerable.Range(0, 6) where getConnected(dir,func,channel) select func);
-        }
-
-        public override ArType getType()
-        {
-            return ArType.Spawn;
-        }
-    }
 }

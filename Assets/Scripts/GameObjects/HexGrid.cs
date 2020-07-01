@@ -128,6 +128,22 @@ namespace GameObjects
         }
         
     }
+
+    public class Chn
+    {
+        public readonly int N;
+
+        private Chn(int n)
+        {
+            N = n;
+        }
+        
+        public static Chn Red = new Chn(0);
+        public static Chn Yellow = new Chn(1);
+        public static Chn Blue = new Chn(2);
+
+        public static IEnumerable<Chn> allChannels() => new List<Chn> {Red, Yellow, Blue};
+    }
     
     
 }

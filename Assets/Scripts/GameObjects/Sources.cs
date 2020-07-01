@@ -6,19 +6,19 @@ namespace GameObjects
 {
     public abstract class Source
     {
-        public abstract bool sourceSend(int turn, int channel);
+        public abstract bool sourceSend(int turn, Chn channel);
 
-        public abstract bool emitToDir(Dir dir, int turn, int channel);
+        public abstract bool emitToDir(Dir dir, int turn, Chn channel);
     }
 
     public class TimerSource : Source
     {
-        public override bool sourceSend(int turn, int channel)
+        public override bool sourceSend(int turn, Chn channel)
         {
             return true;
         }
 
-        public override bool emitToDir(Dir dir, int turn, int channel)
+        public override bool emitToDir(Dir dir, int turn, Chn channel)
         {
             return true;
         }

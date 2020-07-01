@@ -47,6 +47,7 @@
             <e p="UIElements.cs" t="Include" />
           </e>
           <e p="UIControl" t="Include">
+            <e p="CameraControl.cs" t="Include" />
             <e p="SelectorManager.cs" t="Include" />
             <e p="TileManager.cs" t="Include" />
             <e p="UIEventInvoker.cs" t="Include" />

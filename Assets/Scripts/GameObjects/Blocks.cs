@@ -7,16 +7,16 @@ namespace GameObjects
 {
     public class Blocks : MonoBehaviour
     {
-        private HexGrid hexGrid;
+        private HexGrid _hexGrid;
 
-        private Block[,] blocksArray;
-        private HashSet<Block> blocksSet = new HashSet<Block>();
+        private Block[,] _blocksArray;
+        private HashSet<Block> _blocksSet = new HashSet<Block>();
 
         public void Start()
         {
-            hexGrid = GameObject.Find("HexGrid").GetComponent<HexGrid>();
+            _hexGrid = GameObject.Find("HexGrid").GetComponent<HexGrid>();
 
-            blocksArray = new Block[hexGrid.extent * 2, hexGrid.extent * 2];
+            _blocksArray = new Block[_hexGrid.extent * 2, _hexGrid.extent * 2];
             alignStartingBlocks();
         }
 
@@ -40,15 +40,15 @@ namespace GameObjects
         public BroadCastResult getBroadcast(int turn)
         {
             BroadCastResult broadCastResult = new BroadCastResult();
-            received(0, turn, broadCastResult);
-            received(1, turn, broadCastResult);
-            received(2, turn, broadCastResult);
+            received(Chn.Red, turn, broadCastResult);
+            received(Chn.Yellow, turn, broadCastResult);
+            received(Chn.Blue, turn, broadCastResult);
             return broadCastResult;
         }
 
-        private void received(int channel, int turn, BroadCastResult broadCastResult)
+        private void received(Chn channel, int turn, BroadCastResult broadCastResult)
         {
-            List<Block> redSources = blocksSet.Where(
+            List<Block> redSources = _blocksSet.Where(
                 b => b.hasSource() && b.getSource().sourceSend(turn, channel)).ToList();
 
             HashSet<Block> visited = new HashSet<Block>();
@@ -56,7 +56,7 @@ namespace GameObjects
             {
                 foreach (Dir dir in Dir.allDirs())
                 {
-                    if (!source.getSource().emitToDir(dir, turn, 0)) continue;
+                    if (!source.getSource().emitToDir(dir, turn, channel)) continue;
 
                     Block next = source.getStuckDir(dir);
 
@@ -65,7 +65,7 @@ namespace GameObjects
                         visited.Add(next);
                         broadCastResult.AddBlockFromDir(channel, next, dir);
 
-                        dfsRecurse(visited, broadCastResult, next, 0, turn, dir.Opposite());
+                        dfsRecurse(visited, broadCastResult, next, channel, turn, dir.Opposite());
                     }
                 }
             }
@@ -76,7 +76,7 @@ namespace GameObjects
             }
         }
 
-        private void dfsRecurse(HashSet<Block> visited, BroadCastResult broadCastResult, Block start, int channel,
+        private void dfsRecurse(HashSet<Block> visited, BroadCastResult broadCastResult, Block start, Chn channel,
             int turn, Dir entryDir)
         {
             foreach (Dir toDir in start.getRouting().getAllFrom(entryDir, channel))
@@ -97,13 +97,21 @@ namespace GameObjects
 
         public Block blockAtPos(Vector2Int pos)
         {
-            return blocksArray[pos.x + hexGrid.extent, pos.y + hexGrid.extent];
+            return _blocksArray[pos.x + _hexGrid.extent, pos.y + _hexGrid.extent];
         }
 
         private void setBlockAtPos(Vector2Int pos, Block block)
         {
-            blocksArray[pos.x + hexGrid.extent, pos.y + hexGrid.extent] = block;
-            blocksSet.Add(block);
+            _blocksArray[pos.x + _hexGrid.extent, pos.y + _hexGrid.extent] = block;
+            _blocksSet.Add(block);
+        }
+
+        public void MoveBlock(Block block,Vector2Int start, Vector2Int end, float progress)
+        {
+            Vector3 startPos = HexGrid.getPosFromCoords(start);
+            Vector3 EndPos = HexGrid.getPosFromCoords(end);
+            Vector3 pos = Vector3.Lerp(startPos, EndPos, progress);
+            block.transform.position = pos;
         }
 
         public bool placeBlock(Vector2Int pos, Block block)
@@ -122,6 +130,11 @@ namespace GameObjects
 
             return true;
         }
+
+        public IEnumerable<Block> getAllBlocks()
+        {
+            return new List<Block>(_blocksSet);
+        }
     }
 
     public class BroadCastResult
@@ -133,37 +146,55 @@ namespace GameObjects
             new Dictionary<Block, HashSet<Dir>>(),
         };
 
-        public void AddBlockFromDir(int channel, Block b, Dir toDir)
+        public void AddBlockFromDir(Chn channel, Block b, Dir toDir)
         {
             Dir dir = toDir.Opposite();
-            if (_dictionary[channel].ContainsKey(b)) _dictionary[channel][b].Add(dir);
-            else _dictionary[channel][b] = new HashSet<Dir> {dir};
+            if (_dictionary[channel.N].ContainsKey(b)) _dictionary[channel.N][b].Add(dir);
+            else _dictionary[channel.N][b] = new HashSet<Dir> {dir};
         }
 
-        private IEnumerable<Dir> dirsOfBlock(int channel, Block b)
+        private IEnumerable<Dir> dirsOfBlock(Chn channel, Block b)
         {
-            if (!_dictionary[channel].ContainsKey(b)) throw new Exception("Block not in result");
-            return new List<Dir>(_dictionary[channel][b]);
+            if (!_dictionary[channel.N].ContainsKey(b)) throw new Exception("Block not in result");
+            return new List<Dir>(_dictionary[channel.N][b]);
         }
 
         public List<SpawnBlock> getActiveSpawnBlocks()
         {
             List<SpawnBlock> activeSpawnBlocks = new List<SpawnBlock>();
-            for (int channel = 0; channel < 3; channel++)
+            foreach (var channel in Chn.allChannels())
             {
-                foreach (Block b in _dictionary[channel].Keys)
                 {
-                    if (b.GetType() != typeof(SpawnBlock)) continue;
-                    SpawnBlock sb = (SpawnBlock) b;
-                    if (activeSpawnBlocks.Contains(sb)) continue;
+                    foreach (Block b in _dictionary[channel.N].Keys)
+                    {
+                        if (b.GetType() != typeof(SpawnBlock)) continue;
+                        SpawnBlock sb = (SpawnBlock) b;
+                        if (activeSpawnBlocks.Contains(sb)) continue;
 
-                    IEnumerable<Dir> inDirs = dirsOfBlock(channel, b);
+                        IEnumerable<Dir> inDirs = dirsOfBlock(channel, b);
 
-                    if (sb.isActiveFromAnyDir(inDirs, channel)) activeSpawnBlocks.Add(sb);
+                        if (sb.isActiveFromAnyDir(inDirs, channel)) activeSpawnBlocks.Add(sb);
+                    }
                 }
             }
 
             return activeSpawnBlocks;
+        }
+
+        public Dir spawnActive(SpawnBlock spawnBlock)
+        {
+            //rule priority determined by first red, then by E->NE signal, then by E->NE func
+            foreach (Chn channel in Chn.allChannels())
+            {
+                List<Dir> inDirs = new List<Dir>(dirsOfBlock(channel, spawnBlock));
+                foreach (Dir signalDir in Dir.allDirs())
+                {
+                    if (!inDirs.Contains(signalDir)) continue;
+                    Dir func = spawnBlock.activeFromDir(signalDir, channel);
+                    if (func != null) return func;
+                }
+            }
+            return null;
         }
 
         public IEnumerable<Block> allBlocksThatRecieved(int channel)
