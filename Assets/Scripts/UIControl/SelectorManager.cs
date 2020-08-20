@@ -12,7 +12,7 @@ namespace UIControl
         private Block recentSelect;
         public void OnEnable()
         {
-            if (selectPrefab == null) selectPrefab = GameObject.Find("ObjectAccess").GetComponent<Prefabs>().selectHex;
+            if (selectPrefab == null) selectPrefab = Access.prefabs.selectHex;
             selectHexes = new Dictionary<Block, GameObject>();
             recentSelect = null;
         }
@@ -56,7 +56,7 @@ namespace UIControl
             else if (!selectHexes.ContainsKey(block) && isSelected)
             {
                 GameObject hex = Instantiate(selectPrefab);
-                hex.transform.position = HexGrid.getPosFromCoords(block.getPos());
+                hex.transform.position = HexGrid.getPosFromCoords(block.Pos);
                 selectHexes.Add(block,hex);
             }
         }
@@ -98,7 +98,7 @@ namespace UIControl
             }
         }
 
-        public void selectOnly(Block block)
+        public void switchSelectOnly(Block block)
         {
             if (recentSelect == block)
             {
@@ -110,6 +110,13 @@ namespace UIControl
                 setSelected(block, true);
                 setRecent(block, true);
             } 
+        }
+
+        public void selectOnly(Block block)
+        {
+            deselectAll();
+            setSelected(block,true);
+            setSelected(block, true);
         }
         
 

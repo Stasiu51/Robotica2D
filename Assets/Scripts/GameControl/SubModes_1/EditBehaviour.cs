@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using GameControl.SubModes_1.EditMode;
+using GameObjects;
 using ObjectAccess;
+using Serialisation;
 using UnityEngine;
 
 namespace GameControl.SubModes_1
@@ -26,7 +28,8 @@ namespace GameControl.SubModes_1
         public override void onEnterOverride()
         {
             Debug.Log("entering edit mode");
-            if (uiElements == null) uiElements = GameObject.Find("ObjectAccess").GetComponent<UIElements>();
+            UndoSystem.saveUndo();
+            if (uiElements == null) uiElements = Access.uiElements;
             uiElements.EditUI.SetActive(true);
         }
 

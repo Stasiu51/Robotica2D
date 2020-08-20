@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Serialisation;
+using UnityEditor;
 using UnityEngine;
 
 namespace GameObjects
@@ -9,14 +11,15 @@ namespace GameObjects
     {
         private HexGrid _hexGrid;
 
-        private Block[,] _blocksArray;
         private HashSet<Block> _blocksSet = new HashSet<Block>();
+        private Dictionary<Vector2Int, Block> _blocksByPos = new Dictionary<Vector2Int, Block>();
 
         public void Start()
         {
             _hexGrid = GameObject.Find("HexGrid").GetComponent<HexGrid>();
 
-            _blocksArray = new Block[_hexGrid.extent * 2, _hexGrid.extent * 2];
+            // _blocksArray = new Block[_hexGrid.extent * 2, _hexGrid.extent * 2];
+            _blocksByPos = new Dictionary<Vector2Int, Block>();
             alignStartingBlocks();
         }
 
@@ -27,8 +30,7 @@ namespace GameObjects
             {
                 Block b = go.GetComponent<Block>();
                 Vector2Int coords = HexGrid.getCoordsFromPos(go.transform.position);
-                b.setPos(coords);
-                setBlockAtPos(coords, b);
+                b.Pos = coords;
             }
 
             foreach (GameObject gameObject in existingBlocks)
@@ -40,23 +42,23 @@ namespace GameObjects
         public BroadCastResult getBroadcast(int turn)
         {
             BroadCastResult broadCastResult = new BroadCastResult();
-            received(Chn.Red, turn, broadCastResult);
-            received(Chn.Yellow, turn, broadCastResult);
-            received(Chn.Blue, turn, broadCastResult);
+            propagateSignal(Chn.Red, turn, broadCastResult);
+            propagateSignal(Chn.Yellow, turn, broadCastResult);
+            propagateSignal(Chn.Blue, turn, broadCastResult);
             return broadCastResult;
         }
 
-        private void received(Chn channel, int turn, BroadCastResult broadCastResult)
+        private void propagateSignal(Chn channel, int turn, BroadCastResult broadCastResult)
         {
-            List<Block> redSources = _blocksSet.Where(
-                b => b.hasSource() && b.getSource().sourceSend(turn, channel)).ToList();
+            List<Block> channelSources = _blocksSet.Where(
+                b => b.HasSource && b.Source.sourceSend(turn, channel)).ToList();
 
             HashSet<Block> visited = new HashSet<Block>();
-            foreach (Block source in redSources)
+            foreach (Block source in channelSources)
             {
                 foreach (Dir dir in Dir.allDirs())
                 {
-                    if (!source.getSource().emitToDir(dir, turn, channel)) continue;
+                    if (!source.Source.emitToDir(dir, turn, channel)) continue;
 
                     Block next = source.getStuckDir(dir);
 
@@ -70,7 +72,7 @@ namespace GameObjects
                 }
             }
 
-            foreach (Block s in redSources)
+            foreach (Block s in channelSources)
             {
                 if (!visited.Contains(s)) visited.Add(s);
             }
@@ -79,7 +81,7 @@ namespace GameObjects
         private void dfsRecurse(HashSet<Block> visited, BroadCastResult broadCastResult, Block start, Chn channel,
             int turn, Dir entryDir)
         {
-            foreach (Dir toDir in start.getRouting().getAllFrom(entryDir, channel))
+            foreach (Dir toDir in start.Routing.getAllFrom(entryDir, channel))
             {
                 Block next = start.getStuckDir(toDir);
 
@@ -97,43 +99,81 @@ namespace GameObjects
 
         public Block blockAtPos(Vector2Int pos)
         {
-            return _blocksArray[pos.x + _hexGrid.extent, pos.y + _hexGrid.extent];
+            if (!_blocksByPos.ContainsKey(pos)) return null;
+            return _blocksByPos[pos];
         }
 
-        private void setBlockAtPos(Vector2Int pos, Block block)
+        public void setBlockAtPos(Vector2Int pos, Block block)
         {
-            _blocksArray[pos.x + _hexGrid.extent, pos.y + _hexGrid.extent] = block;
+            _blocksByPos[pos] = block;
             _blocksSet.Add(block);
         }
 
-        public void MoveBlock(Block block,Vector2Int start, Vector2Int end, float progress)
+        public void forgetBlockPositions()
         {
-            Vector3 startPos = HexGrid.getPosFromCoords(start);
-            Vector3 EndPos = HexGrid.getPosFromCoords(end);
-            Vector3 pos = Vector3.Lerp(startPos, EndPos, progress);
-            block.transform.position = pos;
+            _blocksByPos = new Dictionary<Vector2Int, Block>();
         }
 
         public bool placeBlock(Vector2Int pos, Block block)
         {
             if (blockAtPos(pos) != null) return false;
-            block.gameObject.transform.parent = transform;
-            block.gameObject.transform.position = HexGrid.getPosFromCoords(pos);
-            setBlockAtPos(pos, block);
-            block.setPos(pos);
+            block.Pos = pos;
+            Debug.Log("setpos");
             foreach (Vector2Int pAdj in HexGrid.adjacentTo(pos))
             {
                 Block blockAdj = blockAtPos(pAdj);
                 if (blockAdj == null) continue;
-                blockAdj.setStuck(block);
+                blockAdj.setStuck(block, true);
             }
-
             return true;
         }
 
         public IEnumerable<Block> getAllBlocks()
         {
             return new List<Block>(_blocksSet);
+        }
+
+        private void forgetAll()
+        {
+            _blocksSet = new HashSet<Block>();
+            forgetBlockPositions();
+        }
+
+        public void destroyBlock(Block block)
+        {
+            _blocksSet.Remove(block);
+            _blocksByPos[block.Pos] = null;
+            block.destroy();
+        }
+
+        public void loadFromSave(SavedBlocks save)
+        {
+            foreach (Block block in getAllBlocks())
+            {
+                block.destroy();
+            }
+            forgetAll();
+            foreach (Block block in save.GetBlocks)
+            {
+                block.initialSetup();
+                setBlockAtPos(block.Pos,block);
+            }
+        }
+
+        
+        [Serializable]
+        public class SavedBlocks
+        {
+            private List<Block> _blockSet;
+            public IEnumerable<Block> GetBlocks
+            {
+                get => new List<Block>(_blockSet);
+                private set => _blockSet = new List<Block>(value);
+            }
+            public SavedBlocks(Blocks b)
+            {
+                GetBlocks = b.getAllBlocks();
+            }
         }
     }
 
@@ -155,7 +195,7 @@ namespace GameObjects
 
         private IEnumerable<Dir> dirsOfBlock(Chn channel, Block b)
         {
-            if (!_dictionary[channel.N].ContainsKey(b)) throw new Exception("Block not in result");
+            if (!_dictionary[channel.N].ContainsKey(b)) return new List<Dir>();
             return new List<Dir>(_dictionary[channel.N][b]);
         }
 
@@ -201,5 +241,7 @@ namespace GameObjects
         {
             return _dictionary[channel].Keys;
         }
+        
+        
     }
 }

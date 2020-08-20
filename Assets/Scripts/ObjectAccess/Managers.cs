@@ -1,6 +1,7 @@
 ﻿using GameObjects;
 using UIControl;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace ObjectAccess
 {
@@ -9,6 +10,6 @@ namespace ObjectAccess
         public SelectorManager selectorManager;
         public Blocks Blocks;
         public HexGrid hexGrid;
-        public UIEventInvoker UiEventInvoker;
+        public EditUIEventInvoker editUiEventInvoker;
     }
 }

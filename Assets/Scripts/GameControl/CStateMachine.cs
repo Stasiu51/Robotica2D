@@ -100,9 +100,10 @@ namespace GameControl
         public sealed override void onEnter()
         {
             stateMachine = new CStateMachine();
+            onEnterOverride();
             stateMachine.initialBehaviour = getInitialBehaviour();
             stateMachine.myType = this.GetType();
-            onEnterOverride();
+            
         }
 
         public sealed override void onExit()

@@ -1,37 +1,34 @@
-﻿using UnityEngine;
+﻿using System;
+using ObjectAccess;
+using UnityEngine;
 
 namespace GameObjects
 {
-    public class StructureBlock : SingleBlock
+    [Serializable]
+    public class StructureBlock : Block
     {
         private readonly Routing _routing = Routing.newBasicRouting();
-        private bool _selectable = true;
-        
-        public override int getMass() => SINGLEBLOCKMASS;
+        public override int Mass => BLOCKMASS;
 
-        public override bool selectable() => _selectable;
+        //TODO implement programmable
+        public override bool Selectable => true;
+        
+        protected override GameObject createGameObject() => GameObject.Instantiate(Access.prefabs.structureBlock);
 
         public override void initialSetupOverride()
         {
-            Debug.Log("setup");
-            _selectable = false;
         }
 
-        public override Routing getRouting()
+        public override Routing Routing
         {
-            return _routing;
+            get { return _routing; }
         }
 
-        public override Source getSource()
+        public override Source Source
         {
-            throw new System.Exception("Structure has no source");
+            get { throw new System.Exception("Structure has no source"); }
         }
 
-        public override bool hasSource()
-        {
-            return false;
-        }
-
-        
+        public override bool HasSource => false;
     }
 }

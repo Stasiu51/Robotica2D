@@ -1,98 +1,139 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using ObjectAccess;
+using Serialisation;
 using UnityEngine;
 using UnityEngine.XR.WSA;
 
 namespace GameObjects
 {
-    public abstract class Block : MonoBehaviour
+    [Serializable]
+    public abstract class Block
     {
-        private Vector2Int _pos;
-        [SerializeField] private bool[] initStuck = new bool[6];
-        public abstract bool selectable();
-
-        public abstract void initialSetupOverride();
-
-        public abstract Routing getRouting();
-
-        public abstract Source getSource();
-
-        public abstract bool hasSource();
-
-        public abstract int getMass();
-
-        public Vector2Int getPos()
+        private readonly Block[] _stuck = new Block[6];
+        [NonSerialized]
+        private ConnectionsController _connections;
+        public const int BLOCKMASS = 1;
+        private SerialisableVector2Int _pos = new SerialisableVector2Int(Vector2Int.zero);
+        public abstract bool Selectable { get; }
+        public abstract Routing Routing { get; }
+        public abstract Source Source { get; }
+        public abstract bool HasSource { get; }
+        public abstract int Mass { get; }
+        public Vector2Int Pos
         {
-            return new Vector2Int(_pos.x, _pos.y);
+            get => _pos.vector2Int;
+            set
+            {
+                gameObject.transform.localPosition = HexGrid.getPosFromCoords(value);
+                Access.managers.Blocks.setBlockAtPos(value,this);
+                _pos = new SerialisableVector2Int (value);
+            }
         }
+        
+        
+        [NonSerialized]
+        protected GameObject gameObject;
+        protected abstract GameObject createGameObject();
 
+        protected Block()
+        {
+            initialSetup();
+        }
+        
+        public abstract void initialSetupOverride();
         public void initialSetup()
         {
+            gameObject = createGameObject();
+            _connections = gameObject.GetComponentInChildren<ConnectionsController>();
+            gameObject.transform.parent = Access.managers.Blocks.transform;
+            gameObject.transform.localPosition = HexGrid.getPosFromCoords(_pos.vector2Int);
+            Debug.Log("initialsetup");
+            
             foreach(Dir dir in Dir.allDirs())
             {
-                if (initStuck[dir.N]) setStuckDir(dir);
+                if (_stuck[dir.N] != null) setStuckDir(dir, true);
             }
             initialSetupOverride();
         }
 
-        public void setPos(Vector2Int pos)
+        public void setStuck(Block stuckTo, bool isStuck)
         {
-            transform.position = HexGrid.getPosFromCoords(pos);
-            _pos = pos;
+            Dir dir = HexGrid.relativeDir(Pos, stuckTo.Pos);
+            _stuck[dir.N] = isStuck ? stuckTo : null;
+            _connections.setConnection(dir,stuckTo != null && isStuck);
+            if (stuckTo != null) stuckTo.setStuckInvisible(this, isStuck);
         }
 
-        public abstract void setStuck(Block stuckTo);
-        public abstract void setStuckInvisible(Block stuckFrom);
-        public abstract Block getStuck(Block stuckTo);
-        public abstract Block getStuckDir(Dir dir);
-
-        public abstract void setStuckDir(Dir dir);
-    }
-
-    public abstract class SingleBlock : Block
-    {
-        private readonly Block[] _stuck = new Block[6];
-        public GameObject[] Connections = new GameObject[6];
-        public const int SINGLEBLOCKMASS = 1;
-
-        public override void setStuck(Block stuckTo)
+        public void setStuckDir(Dir dir, bool isStuck)
         {
-            Dir dir = HexGrid.relativeDir(getPos(), stuckTo.getPos());
-            _stuck[dir.N] = stuckTo;
-            Connections[dir.N]?.SetActive(stuckTo != null);
-            stuckTo.setStuckInvisible(this);
-        }
-
-        public override void setStuckDir(Dir dir)
-        {
-            Block stuckTo = GameObject.Find("ObjectAccess").GetComponent<Managers>().Blocks
-                .blockAtPos(getPos() + dir.v);
-            if (stuckTo == null) return;
+            Block stuckTo = Access.managers.Blocks
+                .blockAtPos(Pos + dir.v);
             
-            _stuck[dir.N] = stuckTo;
-            Connections[dir.N]?.SetActive(stuckTo != null);
-            stuckTo.setStuckInvisible(this);
+            _stuck[dir.N] = isStuck ? stuckTo : null;
+            _connections.setConnection(dir,stuckTo != null && isStuck);
+            if (stuckTo != null) stuckTo.setStuckInvisible(this, isStuck);
         }
 
-        public override void setStuckInvisible(Block stuckFrom)
+        public void setStuckInvisible(Block stuckFrom, bool isStuck)
         {
-            Dir dir = HexGrid.relativeDir(getPos(), stuckFrom.getPos());
-            _stuck[dir.N] = stuckFrom;
-            Connections[dir.N]?.SetActive(false);
+            Dir dir = HexGrid.relativeDir(Pos, stuckFrom.Pos);
+            _stuck[dir.N] = isStuck? stuckFrom : null;
+            _connections.setConnection(dir, false);
         }
 
-        public override Block getStuck(Block stuckTo)
+        public Block getStuck(Block stuckTo)
         {
-            Dir dir = HexGrid.relativeDir(getPos(), stuckTo.getPos());
+            Dir dir = HexGrid.relativeDir(Pos, stuckTo.Pos);
             return _stuck[dir.N];
         }
 
-        public override Block getStuckDir(Dir dir)
+        public Block getStuckDir(Dir dir)
         {
             return _stuck[dir.N];
+        }
+
+        public void SetVisible(bool visible)
+        {
+            gameObject.GetComponent<SpriteRenderer>().enabled = visible;
+        }
+        
+        public void AnimateMoveBlock(Vector2Int start, Vector2Int end, float progress)
+        {
+            Vector3 startPos = HexGrid.getPosFromCoords(start);
+            Vector3 EndPos = HexGrid.getPosFromCoords(end);
+            Vector3 pos = Vector3.Lerp(startPos, EndPos, progress);
+            gameObject.transform.position = pos;
+        }
+
+        public Block clone()
+        {
+            Block clone;
+            using (MemoryStream memory_stream = new MemoryStream())
+            {
+                // Serialize the object into the memory stream.
+                BinaryFormatter formatter = new BinaryFormatter();
+                formatter.Serialize(memory_stream, this);
+
+                // Rewind the stream and use it to create a new object.
+                memory_stream.Position = 0;
+                clone = (Block) formatter.Deserialize(memory_stream);
+            }
+            clone.initialSetup();
+            return clone;
+        }
+
+        public void destroy()
+        {
+            foreach (Dir dir in Dir.allDirs())
+            {
+                setStuckDir(dir, false);
+            }
+            GameObject.Destroy(gameObject);
         }
     }
 }

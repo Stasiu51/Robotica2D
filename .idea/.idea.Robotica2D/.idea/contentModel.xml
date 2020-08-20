@@ -18,13 +18,16 @@
                 <e p="EditAddSpawnBlock.cs" t="Include" />
                 <e p="EditAddStructureBlock.cs" t="Include" />
                 <e p="EditIdle.cs" t="Include" />
+                <e p="ProgrammingMode" t="Include">
+                  <e p="ProgrammingCBehaviour.cs" t="Include" />
+                  <e p="ProgramSpawnIdle.cs" t="Include" />
+                </e>
               </e>
               <e p="PlayCBehaviour.cs" t="Include" />
               <e p="PlayMode" t="Include">
                 <e p="PlayEvalPhase.cs" t="Include" />
-                <e p="PlayIdle.cs" t="Include" />
                 <e p="PlayMovePhase.cs" t="Include" />
-                <e p="PlayPostEvalPausePhase.cs" t="Include" />
+                <e p="PlayPaused.cs" t="Include" />
                 <e p="PlaySignalPhase.cs" t="Include" />
               </e>
             </e>
@@ -33,6 +36,8 @@
           <e p="GameObjects" t="Include">
             <e p="Block.cs" t="Include" />
             <e p="Blocks.cs" t="Include" />
+            <e p="BrainBlock.cs" t="Include" />
+            <e p="ConnectionsController.cs" t="Include" />
             <e p="HexGrid.cs" t="Include" />
             <e p="Hub.cs" t="Include" />
             <e p="Movement.cs" t="Include" />
@@ -42,15 +47,28 @@
             <e p="StructureBlock.cs" t="Include" />
           </e>
           <e p="ObjectAccess" t="Include">
+            <e p="Access.cs" t="Include" />
             <e p="Managers.cs" t="Include" />
             <e p="prefabs.cs" t="Include" />
+            <e p="SceneInfo.cs" t="Include" />
             <e p="UIElements.cs" t="Include" />
           </e>
+          <e p="Serialisation" t="Include">
+            <e p="SerialisableVectors.cs" t="Include" />
+            <e p="testsave.cs" t="Include" />
+            <e p="UndoSystem.cs" t="Include" />
+          </e>
+          <e p="testing.cs" t="Include" />
           <e p="UIControl" t="Include">
             <e p="CameraControl.cs" t="Include" />
+            <e p="EditUIEventInvoker.cs" t="Include" />
+            <e p="PlayUIEventInvoker.cs" t="Include" />
             <e p="SelectorManager.cs" t="Include" />
+            <e p="SpawnUI" t="Include">
+              <e p="SpawnSubUIManager.cs" t="Include" />
+              <e p="SpawnUIManager.cs" t="Include" />
+            </e>
             <e p="TileManager.cs" t="Include" />
-            <e p="UIEventInvoker.cs" t="Include" />
           </e>
         </e>
       </e>

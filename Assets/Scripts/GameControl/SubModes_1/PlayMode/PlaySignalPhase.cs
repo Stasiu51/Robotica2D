@@ -13,26 +13,26 @@ namespace GameControl.SubModes_1.PlayMode
         public override Type belongsTo() => typeof(PlayCBehaviour);
         
         private static PlaySignalPhase _instance ;
-        private const float SIGNALPAUSETIME = 1f;
+        private const float SIGNALPAUSETIME = 0.5f;
         private Managers managers;
         private Blocks blocks;
 
 
         public override void onEnter()
         {
-            Debug.Log("Enter signal");
-
-            if (managers == null) managers = GameObject.Find("ObjectAccess").GetComponent<Managers>();
-            if (blocks == null) blocks = managers.Blocks;
             int turn = ((PlayCBehaviour) new PlayCBehaviour().getInstance()).Turn;
-            
-            BroadCastResult broadcasts = blocks.getBroadcast(turn);
-            ((PlayMovePhase) new PlayMovePhase().getInstance()).setBroadcastResult(broadcasts);
+            Debug.Log("Enter signal, turn " + turn);
 
-            foreach (Block block in broadcasts.allBlocksThatRecieved(0))
-            {
-                block.GetComponent<SpriteRenderer>().color = Color.blue;
-            }
+            if (managers == null) managers = Access.managers;
+            if (blocks == null) blocks = managers.Blocks;
+
+            BroadCastResult broadcasts = blocks.getBroadcast(turn);
+            ((PlayMovePhase) new PlayMovePhase().getInstance()).broadCastResult = broadcasts;
+
+            // foreach (Block block in broadcasts.allBlocksThatRecieved(0))
+            // {
+            //     block.GetComponent<SpriteRenderer>().color = Color.blue;
+            // }
             
             GameObject Timers = GameObject.Find("Timers");
             Timer.MakeTimer(SIGNALPAUSETIME, () => Exit(new PlayMovePhase().getInstance()));

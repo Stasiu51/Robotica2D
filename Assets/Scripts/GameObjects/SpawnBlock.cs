@@ -1,39 +1,42 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using ObjectAccess;
+using Serialisation;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace GameObjects
 {
-    public class SpawnBlock : SingleBlock
+    [Serializable]
+    public class SpawnBlock : Block
     {
         private readonly Routing _routing = Routing.newBasicRouting();
-        private readonly SpawnRouting _spawnRouting = new SpawnRouting();
+        public readonly SpawnRouting spawnRouting = new SpawnRouting();
+        private Block template;
         
-        public override int getMass() => SINGLEBLOCKMASS;
+        [SerializeField]
+        public override int Mass => BLOCKMASS;
 
-        public override bool selectable() => true;
+        public override bool Selectable => true;
+
+        protected override GameObject createGameObject() => GameObject.Instantiate(Access.prefabs.spawnBlock);
         public override void initialSetupOverride()
         {
+            //TODO get template
+            template = new StructureBlock();
+            template.SetVisible(false);
         }
 
-        public override Routing getRouting()
-        {
-            return _routing;
-        }
+        public override Routing Routing => _routing;
 
-        public override Source getSource()
-        {
-            throw new System.Exception("Spawn has no source");
-        }
+        public override Source Source => throw new System.Exception("Spawn has no source");
 
-        public override bool hasSource()
-        {
-            return false;
-        }
+        public override bool HasSource => false;
 
         public Dir activeFromDir(Dir dir, Chn channel)
         {
-            List<Dir> funcs = _spawnRouting.funcsConnectedToDir(dir, channel);
+            List<Dir> funcs = spawnRouting.funcsConnectedToDir(dir, channel);
             if (funcs.Count == 0) return null;
             return funcs[0];
         }
@@ -47,22 +50,25 @@ namespace GameObjects
 
             return false;
         }
-        
-        private class SpawnRouting
+
+        public Block spawnNewBlock()
+        {
+            return template.clone();
+        }
+        [Serializable]
+
+        public class SpawnRouting
         {
             private bool[,,] _spawnConnect;
     
             public SpawnRouting()
             {
+                Debug.Log("spawnblock constructor");
                 _spawnConnect = new bool[3,6, 6];
-                foreach (Dir dir in Dir.allDirs())
-                {
-                    _spawnConnect[0, dir.N, 0] = true;
-                }
             }
-            public void setConnected(bool isconnected, Dir dir1, Dir func, Chn channel)
+            public void setConnected(bool isConnected, Dir dir1, Dir func, Chn channel)
             {
-                _spawnConnect[channel.N,dir1.N, func.N] = isconnected;
+                _spawnConnect[channel.N,dir1.N, func.N] = isConnected;
             }
 
             public bool getConnected(Dir dir1, Dir func, Chn channel)
@@ -75,8 +81,7 @@ namespace GameObjects
                 return new List<Dir>(from funcDir in Dir.allDirs() where getConnected(signalDir,funcDir,channel) select funcDir);
             }
         }
-        
 
-        
+
     }
 }

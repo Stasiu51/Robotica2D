@@ -7,18 +7,17 @@ namespace GameControl
     {
         public float timeRemaining {get; private set; }
         public float duration { get; private set; }
-        public delegate void Callback();
 
         public float getProgress() => 1 - (timeRemaining / duration);
 
-        private Callback _callback;
-        public Timer(float duration, Callback callback)
+        private Action _callback;
+        public Timer(float duration, Action callback)
         {
             timeRemaining = duration;
             _callback = callback;
         }
 
-        public static Timer MakeTimer(float duration, Callback callback)
+        public static Timer MakeTimer(float duration, Action callback)
         {
             GameObject timers = GameObject.Find("Timers");
             Timer t = timers.AddComponent<Timer>();

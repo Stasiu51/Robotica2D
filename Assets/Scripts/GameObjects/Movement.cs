@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using ObjectAccess;
 using UnityEngine;
-using UnityEngine.Experimental.PlayerLoop;
 
 namespace GameObjects
 {
@@ -58,7 +57,8 @@ namespace GameObjects
                 if (block.GetType() == typeof(SpawnBlock))
                 {
                     SpawnBlock sb = (SpawnBlock) block;
-                    if (_broadCastResult.spawnActive(sb) == dir)
+                    Dir spawnDir = _broadCastResult.spawnActive(sb);
+                    if (spawnDir != null && spawnDir == dir)
                     {
                         movementSegment.AddBoundary(sb,dir);
                         continue;
@@ -85,7 +85,7 @@ namespace GameObjects
         public Vector2Int targetCoordsOfBlock(Block block)
         {
             MovementSegment containingSegment = _map[block];
-            return _winningProposal.getSegmentTarget(containingSegment);
+            return block.Pos + _winningProposal.getSegmentTarget(containingSegment);
         }
         
         private class MovementSegment
@@ -98,7 +98,7 @@ namespace GameObjects
 
             public MovementSegment(Movement movement)
             {
-                _blocks = GameObject.Find("ObjectAccess").GetComponent<Managers>().Blocks;
+                _blocks = Access.managers.Blocks;
                 _movement = movement;
             }
 
@@ -106,7 +106,7 @@ namespace GameObjects
 
             public void AddBlock(Block block)
             {
-                totalMass += block.getMass();
+                totalMass += block.Mass;
                 _movement._map[block] = this;
             }
 
@@ -126,7 +126,7 @@ namespace GameObjects
             {
                 foreach (KeyValuePair<SpawnBlock,Dir> kv in _boundaries)
                 {
-                    Block other = _blocks.blockAtPos(kv.Key.getPos() + kv.Value.v);
+                    Block other = _blocks.blockAtPos(kv.Key.Pos + kv.Value.v);
                     if (other == null) continue;
                     MovementSegment otherSegment = _movement.getSegment(other);
                     otherSegment.addConstraint(this,kv.Value.Opposite());

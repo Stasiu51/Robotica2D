@@ -1,5 +1,6 @@
 ﻿using System;
 using GameObjects;
+using Serialisation;
 using UnityEngine;
 
 namespace GameControl.SubModes_1.EditMode
@@ -49,7 +50,13 @@ namespace GameControl.SubModes_1.EditMode
         {
             if (e.type == EventType.MouseDown && e.button == 0)
             {
-                return placeblock() ? new EditIdle().getInstance() :null;
+                if (placeblock())
+                {
+                    UndoSystem.saveUndo();
+                    return new EditIdle().getInstance();
+                }
+
+                return null;
             }
 
             if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Escape) return new EditIdle().getInstance();

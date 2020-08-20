@@ -1,5 +1,6 @@
 ﻿using GameObjects;
 using ObjectAccess;
+using Serialisation;
 using UnityEngine;
 
 namespace GameControl.SubModes_1.EditMode
@@ -21,8 +22,9 @@ namespace GameControl.SubModes_1.EditMode
             bool success = blocks.placeBlock(hexGrid.mouseCoords(), toPlace);
             if (success)
             {
-                toPlace.GetComponent<SpriteRenderer>().enabled = true;
+                toPlace.SetVisible(true);
                 toPlace = null;
+                
                 return true;
             }
 
@@ -31,14 +33,13 @@ namespace GameControl.SubModes_1.EditMode
 
         protected override void setup()
         {
-            toPlace = GameObject.Instantiate(GameObject.Find("ObjectAccess").GetComponent<Prefabs>().structureBlock)
-                .GetComponent<StructureBlock>();
-            toPlace.GetComponent<SpriteRenderer>().enabled = false;
+            toPlace = new StructureBlock();
+            toPlace.SetVisible(false);
         }
 
         protected override void cancel()
         {
-            if (toPlace != null) GameObject.Destroy(toPlace.gameObject);
+            // if (toPlace != null) GameObject.Destroy(toPlace.gameObject);
             
         }
     }

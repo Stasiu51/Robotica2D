@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using GameControl.SubModes_1;
+using Serialisation;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -46,7 +47,11 @@ namespace GameControl
     public class GameManager : MonoBehaviour
     {
         private readonly GameMachine _gameMachine = new GameMachine();
-        public void Start() => _gameMachine.onEnter();
+
+        public void Start()
+        {
+            _gameMachine.onEnter(); 
+        } 
         public void Update() => _gameMachine.update();
         public void OnGUI() => _gameMachine.ongui(Event.current);
     }

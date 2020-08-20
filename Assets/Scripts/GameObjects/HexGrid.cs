@@ -7,6 +7,8 @@ using GameControl.SubModes_1.EditMode;
 using ObjectAccess;
 using UIControl;
 using UnityEngine;
+using UnityEngine.Serialization;
+using Debug = UnityEngine.Debug;
 
 namespace GameObjects
 {
@@ -16,8 +18,8 @@ namespace GameObjects
         private static readonly float Ratio = Mathf.Sqrt(3) / 2;
         public int extent = 10;
         private Vector2Int _currentMousePos = Vector2Int.zero;
-        public UIEventInvoker _uiEventInvoker;
-        
+        private Camera _camera;
+
         public static Vector3 getPosFromCoords(Vector2Int pos)
         {
             return getPosFromCoords(pos.x, pos.y);
@@ -36,25 +38,33 @@ namespace GameObjects
 
         public void Start()
         {
-            GameObject tile = GameObject.Find("ObjectAccess").GetComponent<Prefabs>().backgroundHex;
-            for (int x = -extent; x < extent; x++)
-            {
-                for (int y = -extent; y < extent; y++)
-                {
-                    GameObject go = Instantiate(tile,parent: transform);
-                    TileManager tm = go.GetComponent<TileManager>();
-                    tm.setPos(new Vector2Int(x,y));
-                    go.transform.localPosition = getPosFromCoords(x, y);
-                }
-            }
+            // GameObject tile = Access.prefabs.backgroundHex;
+            // for (int x = -extent; x < extent; x++)
+            // {
+            //     for (int y = -extent; y < extent; y++)
+            //     {
+            //         GameObject go = Instantiate(tile,parent: transform);
+            //         TileManager tm = go.GetComponent<TileManager>();
+            //         tm.setPos(new Vector2Int(x,y));
+            //         go.transform.localPosition = getPosFromCoords(x, y);
+            //     }
+            // }
         }
 
         public Vector2Int mouseCoords()
         {
-            return _currentMousePos;
+            Vector3 mousePos = Input.mousePosition;
+            // Debug.Log(mousePos);
+            mousePos.z = Mathf.Abs(Camera.main.transform.position.z);
+            Vector3 worldPosition = Camera.main.ScreenToWorldPoint(mousePos);
+            // Debug.Log(worldPosition);
+            return getCoordsFromPos(worldPosition);
         }
 
-        public Vector3 mousePos() => getPosFromCoords(_currentMousePos);
+        
+
+
+        public Vector3 mousePos() => getPosFromCoords(mouseCoords());
 
         public void mouseMoved(Vector2Int newCoords)
         {
@@ -101,7 +111,7 @@ namespace GameObjects
             throw new ArgumentException("not a valid direction");
         }
 
-        private static Dir FromN(int n)
+        public static Dir dirFromN(int n)
         {
             switch (n)
             {
@@ -124,7 +134,7 @@ namespace GameObjects
 
         public Dir Opposite()
         {
-            return FromN((N + 3) % 6);
+            return dirFromN((N + 3) % 6);
         }
         
     }
@@ -143,6 +153,11 @@ namespace GameObjects
         public static Chn Blue = new Chn(2);
 
         public static IEnumerable<Chn> allChannels() => new List<Chn> {Red, Yellow, Blue};
+
+        public static Chn chnFromN(int n)
+        {
+            return ((List<Chn>) Chn.allChannels())[n];
+        }
     }
     
     
